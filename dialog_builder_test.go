@@ -3,8 +3,6 @@ package dialog_builder
 import (
 	"os"
 	"testing"
-
-	. "github.com/adaptiveteam/adaptive-utils-go/models"
 )
 
 func Test_dialog_Build(t *testing.T) {

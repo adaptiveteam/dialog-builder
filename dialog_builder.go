@@ -5,6 +5,46 @@ import (
 )
 
 
+// NewDialogData is helper function that enables users to correctly
+// create instantiate a DialogData structure
+func NewDialogData(
+	organization string,
+	dialogRepo string,
+	dialogFolder string,
+	dialogCatalog string,
+	dialogTable string,
+	learnMoreRepo string,
+	learnMoreFolder string,
+	buildBranch string,
+	cultivationBranch string,
+	masterBranch string,
+) (rv DialogData) {
+	if organization       == "" ||
+		dialogRepo        == "" ||
+		dialogFolder      == "" ||
+		dialogCatalog     == "" ||
+		dialogTable       == "" ||
+		learnMoreRepo     == "" ||
+		learnMoreFolder   == "" ||
+		buildBranch       == "" ||
+		cultivationBranch == "" ||
+		masterBranch      == ""	{
+		panic("cannot have empty initialization values")
+	}
+
+	rv.Organization = organization
+	rv.DialogRepo = dialogRepo
+	rv.DialogFolder = dialogFolder
+	rv.DialogCatalog = dialogCatalog
+	rv.DialogTable = dialogTable
+	rv.LearnMoreRepo = learnMoreRepo
+	rv.LearnMoreFolder = learnMoreFolder
+	rv.BuildBranch = buildBranch
+	rv.CultivationBranch = cultivationBranch
+	rv.MasterBranch = masterBranch
+	return rv
+}
+
 func Build(dc DialogData) (
 	errorBuild error,
 	errorCultivatePR error,
