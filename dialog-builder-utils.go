@@ -36,7 +36,7 @@ func updateFile(
 	fileName string,
 	newContents string,
 	commitMessage string,
-) (err error){
+) (modified bool, err error){
 	getOptions := &github.RepositoryContentGetOptions{
 		Ref: "heads/"+branch,
 	}
@@ -66,7 +66,7 @@ func updateFile(
 				fileName,
 				repositoryContentsOptions,
 			)
-
+			modified = true
 		}
 	}else {
 		err = fmt.Errorf("%s is not a file", fileName)
@@ -75,7 +75,7 @@ func updateFile(
 }
 
 func storeDialog(
-	dc DialogData,
+	dc *DialogData,
 	dialogCoordinates string,
 	dialogSubject string,
 	dialog []string,
@@ -102,7 +102,7 @@ func storeDialog(
 	return err
 }
 
-func getLearnMoreContent(dc DialogData, dialogID string) (content string, link string, err error){
+func getLearnMoreContent(dc *DialogData, dialogID string) (content string, link string, err error){
 	getOptions := &github.RepositoryContentGetOptions{
 		Ref: "heads/"+dc.CultivationBranch,
 	}
@@ -134,7 +134,7 @@ func getLearnMoreContent(dc DialogData, dialogID string) (content string, link s
 	return content, link, err
 }
 
-func updateDialogFile(dc DialogData, newContent string, path string, commitMessage string) (err error) {
+func updateDialogFile(dc *DialogData, newContent string, path string, commitMessage string) (err error) {
 	err = updateFile(
 		dc.Organization,
 		dc.DialogRepo,
@@ -143,6 +143,7 @@ func updateDialogFile(dc DialogData, newContent string, path string, commitMessa
 		newContent,
 		commitMessage,
 	)
+	dc.Modified = true
 	return  err
 }
 
@@ -203,7 +204,7 @@ func parseDialogFile(blob string) (
 }
 
 func postDialog(
-	dc DialogData,
+	dc *DialogData,
 	dialog *github.RepositoryContent,
 )(err error) {
 	getOptions := &github.RepositoryContentGetOptions{
@@ -296,7 +297,7 @@ func postDialog(
 }
 
 func crawlContext(
-	dc DialogData,
+	dc *DialogData,
 	path string,
 ) (err error) {
 	getOptions := &github.RepositoryContentGetOptions{
@@ -327,7 +328,7 @@ func crawlContext(
 }
 
 func pullRequestExists(
-	dc DialogData,
+	dc *DialogData,
 	repo string,
 	head string,
 	base string,
@@ -349,7 +350,7 @@ func pullRequestExists(
 }
 
 func createPullRequest(
-	dc DialogData,
+	dc *DialogData,
 	prSummmary string,
 	prDetails,
 	repo string,
@@ -373,7 +374,7 @@ func createPullRequest(
 	return pr, err
 }
 
-func loadDialog(dc DialogData) error {
+func loadDialog(dc *DialogData) error {
 	getOptions := &github.RepositoryContentGetOptions{
 		Ref: "heads/"+dc.BuildBranch,
 	}
@@ -418,7 +419,7 @@ func getAllContent(dialogTable string) (dialogEntries []DialogEntry, err error) 
 }
 
 func generateCatalog(
-	dc DialogData,
+	dc *DialogData,
 	fileName string,
 ) (report string, err error) {
 	allContent, err := getAllContent(dc.DialogTable)
@@ -475,22 +476,24 @@ func generateCatalog(
 }
 
 func updateCatalog(
-	dc DialogData,
+	dc *DialogData,
 	fileName string,
 ) (err error) {
-	var newCatalogContents string
-	commitMessage := "Catalog updated on "+time.Now().Format("2006-01-02 at 15:04:05")
-	newCatalogContents,err = generateCatalog(
-		dc,
-		fileName,
-	)
-	err = updateFile(
-		dc.Organization,
-		dc.DialogRepo,
-		dc.BuildBranch,
-		fileName,
-		newCatalogContents,
-		commitMessage,
-	)
+	if dc.Modified {
+		var newCatalogContents string
+		commitMessage := "Catalog updated on "+time.Now().Format("2006-01-02 at 15:04:05")
+		newCatalogContents,err = generateCatalog(
+			dc,
+			fileName,
+		)
+		err = updateFile(
+			dc.Organization,
+			dc.DialogRepo,
+			dc.BuildBranch,
+			fileName,
+			newCatalogContents,
+			commitMessage,
+		)
+	}
 	return err
 }

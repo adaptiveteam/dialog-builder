@@ -1,5 +1,5 @@
 github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5/go.mod h1:lmUJ/7eu/Q8D7ML55dXQrVaamCz2vxCfdQBasLZfHKk=
-github.com/adaptiveteam/adaptive-utils-go v0.7.0 h1:7H98NmmqCXUUt5AUlQym0Y1gW+CO07J9g7TdmWt65yo=
+github.com/adaptiveteam/adaptive-utils-go v0.7.0 h1:kHI506m1nTVPdcwq886Vl44GqRxWiyD0yL4+Z9sj7ZQ=
 github.com/adaptiveteam/adaptive-utils-go v0.7.0/go.mod h1:qHVgaO5GPN4NziPGtWslg4hEvtm41BJAlW3Fp5EI0Eo=
 github.com/adaptiveteam/aws-utils-go v0.6.0 h1:xoG/nFIuhJKWrvxvcr5ymxkciLktpZ8MRSPVOLNuevM=
 github.com/adaptiveteam/aws-utils-go v0.6.0/go.mod h1:06Xh9Kd24X3r+WniCk321r5u3RkMFds3xY6TubONTZw=

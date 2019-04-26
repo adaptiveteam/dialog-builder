@@ -19,7 +19,7 @@ func Test_dialog_Build(t *testing.T) {
 		os.Getenv("MASTER_BRANCH"),
 	)
 
-	errorBuild, errorCultivatePR, errorMasterPR, errorLearnMorePR := Build(dc)
+	errorBuild, errorCultivatePR, errorMasterPR, errorLearnMorePR := Build(&dc)
 	if errorBuild != nil ||
 		errorCultivatePR != nil ||
 		errorMasterPR != nil ||

@@ -1,9 +1,5 @@
 package dialog_builder
 
-import (
-	. "github.com/adaptiveteam/adaptive-utils-go/models"
-)
-
 
 // NewDialogData is helper function that enables users to correctly
 // create instantiate a DialogData structure
@@ -42,10 +38,36 @@ func NewDialogData(
 	rv.BuildBranch = buildBranch
 	rv.CultivationBranch = cultivationBranch
 	rv.MasterBranch = masterBranch
+	rv.Modified = false
 	return rv
 }
 
-func Build(dc DialogData) (
+// DialogData stores all of the infrastructure data necessary to work with GitHub & Dynamo
+// organization is the organization that owns the dialog repo
+// dialogRepo is the name of the repo where the dialog can be found
+// dialogFolder is the folder where the dialog can be found
+// dialogCatalog is the file for the dialog catalog file
+// dialogTable is the DynamoDB table use to store the dialog
+// learnMoreRepo is the repo where the Learn More content can be found
+// learnMoreFolder is the directory where the Learn More content can be found
+// buildBranch is the branch to build against
+// cultivationBranch is the branch to update with cultivation work
+// masterBranch is the master branch
+type DialogData struct {
+	Organization string
+	DialogRepo string
+	DialogFolder string
+	DialogCatalog string
+	DialogTable string
+	LearnMoreRepo string
+	LearnMoreFolder string
+	BuildBranch string
+	CultivationBranch string
+	MasterBranch string
+	Modified bool
+}
+
+func Build(dc *DialogData) (
 	errorBuild error,
 	errorCultivatePR error,
 	errorMasterPR error,
@@ -59,7 +81,7 @@ func Build(dc DialogData) (
 		)
 	}
 
-	if errorBuild == nil {
+	if errorBuild == nil && dc.Modified {
 		if !pullRequestExists(
 			dc,
 			dc.DialogRepo,
