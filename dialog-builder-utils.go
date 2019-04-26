@@ -71,7 +71,7 @@ func updateFile(
 	}else {
 		err = fmt.Errorf("%s is not a file", fileName)
 	}
-	return err
+	return modified, err
 }
 
 func storeDialog(
@@ -135,7 +135,7 @@ func getLearnMoreContent(dc *DialogData, dialogID string) (content string, link 
 }
 
 func updateDialogFile(dc *DialogData, newContent string, path string, commitMessage string) (err error) {
-	err = updateFile(
+	dc.Modified, err = updateFile(
 		dc.Organization,
 		dc.DialogRepo,
 		dc.BuildBranch,
@@ -143,7 +143,6 @@ func updateDialogFile(dc *DialogData, newContent string, path string, commitMess
 		newContent,
 		commitMessage,
 	)
-	dc.Modified = true
 	return  err
 }
 
@@ -486,7 +485,8 @@ func updateCatalog(
 			dc,
 			fileName,
 		)
-		err = updateFile(
+		var modified bool
+		modified,err = updateFile(
 			dc.Organization,
 			dc.DialogRepo,
 			dc.BuildBranch,
@@ -494,6 +494,9 @@ func updateCatalog(
 			newCatalogContents,
 			commitMessage,
 		)
+		if !modified {
+			err = fmt.Errorf("expected to modify dialog library but did not")
+		}
 	}
 	return err
 }
