@@ -96,6 +96,7 @@ func storeDialog(
 		LearnMoreContent:learnMoreContent,
 		BuildBranch:dc.BuildBranch,
 		CultivationBranch:dc.CultivationBranch,
+		MasterBranch:dc.MasterBranch,
 	}
 	err = dynamo.PutTableEntry(item, dc.DialogTable)
 
@@ -478,25 +479,24 @@ func updateCatalog(
 	dc *DialogData,
 	fileName string,
 ) (err error) {
-	if dc.Modified {
-		var newCatalogContents string
-		commitMessage := "Catalog updated on "+time.Now().Format("2006-01-02 at 15:04:05")
-		newCatalogContents,err = generateCatalog(
-			dc,
-			fileName,
-		)
-		var modified bool
-		modified,err = updateFile(
-			dc.Organization,
-			dc.DialogRepo,
-			dc.BuildBranch,
-			fileName,
-			newCatalogContents,
-			commitMessage,
-		)
-		if !modified {
-			err = fmt.Errorf("expected to modify dialog library but did not")
-		}
+	var newCatalogContents string
+	commitMessage := "Catalog updated on "+time.Now().Format("2006-01-02 at 15:04:05")
+	newCatalogContents,err = generateCatalog(
+		dc,
+		fileName,
+	)
+	var modified bool
+	modified,err = updateFile(
+		dc.Organization,
+		dc.DialogRepo,
+		dc.BuildBranch,
+		fileName,
+		newCatalogContents,
+		commitMessage,
+	)
+	if !modified {
+		err = fmt.Errorf("expected to modify dialog library but did not")
 	}
+
 	return err
 }
