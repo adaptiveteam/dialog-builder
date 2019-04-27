@@ -1,4 +1,4 @@
-module github.com/ctcreel/dialog
+module github.com/adaptiveteam/dialog-builder
 
 require (
 	github.com/adaptiveteam/adaptive-utils-go v0.7.0

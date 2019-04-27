@@ -3,7 +3,7 @@ package dialog_builder
 import (
 	"context"
 	"fmt"
-	. "github.com/adaptiveteam/adaptive-utils-go/models"
+	"github.com/adaptiveteam/adaptive-utils-go/models"
 	"github.com/adaptiveteam/aws-utils-go"
 	"github.com/adaptiveteam/core-utils-go"
 	"github.com/google/go-github/github"
@@ -85,7 +85,7 @@ func storeDialog(
 	learnMoreContent string,
 ) (err error) {
 	updated := time.Now().Format("2006-01-02")
-	item := DialogEntry{
+	item := models.DialogEntry{
 		Context:dialogCoordinates,
 		Subject:dialogSubject,
 		Updated:updated,
@@ -403,9 +403,9 @@ func loadDialog(dc *DialogData) error {
 	return err
 }
 
-func getAllContent(dialogTable string) (dialogEntries []DialogEntry, err error) {
+func getAllContent(dialogTable string) (dialogEntries []models.DialogEntry, err error) {
 	//scan the table after deletion
-	dialogEntries = make([]DialogEntry,0)
+	dialogEntries = make([]models.DialogEntry,0)
 	err = dynamo.ScanTable(dialogTable, &dialogEntries)
 	if err == nil {
 		sort.SliceStable(
