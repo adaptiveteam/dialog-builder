@@ -1,0 +1,30 @@
+language: go
+go:
+  - 1.12.x
+
+os:
+  - linux
+
+dist: trusty
+sudo: false
+
+install: true
+
+env:
+  - GO111MODULE=on
+
+script:
+  # Download the JFrog CLI
+  - curl -fL https://getcli.jfrog.io | sh
+  - ./jfrog rt config --url=$ARTIFACTORY_URL --user=$ARTIFACTORY_USER --password=$ARTIFACTORY_PASSWORD --interactive false
+  - ./jfrog rt c show
+  - ./jfrog rt go test go --url=$ARTIFACTORY_URL --user=$ARTIFACTORY_USER --password=$ARTIFACTORY_PASSWORD
+  - ./jfrog rt go build go --url=$ARTIFACTORY_URL --user=$ARTIFACTORY_USER --password=$ARTIFACTORY_PASSWORD
+  - ./jfrog rt gp go-local v0.1.0 --build-name=dialog-builder --build-number=$TRAVIS_BUILD_NUMBER
+  # Collect the environment variables with bce command
+  - ./jfrog rt bce dialog-builder $TRAVIS_BUILD_NUMBER
+  # Publish the build with bp command
+  - ./jfrog rt bp dialog-builder $TRAVIS_BUILD_NUMBER
+
+notifications:
+  slack: geigsen2:TBhXpLjpz2ggwaNWOTcO7TSo
