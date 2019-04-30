@@ -11,7 +11,7 @@ github.com/adaptiveteam/core-utils-go v0.6.0 h1:ou+DEHWO3oaeQL8IR5VNDAP+m92ssygf
 github.com/adaptiveteam/core-utils-go v0.6.0/go.mod h1:1/YeY2wch76WOIHZYGL5Sj5pLtgFIQf2lDtg17sbnxs=
 github.com/adaptiveteam/core-utils-go v0.7.0 h1:rssXJwwo1129M138Z4hznpIoHI4HegqsRA6rMRdYyFQ=
 github.com/adaptiveteam/core-utils-go v0.7.0/go.mod h1:1/YeY2wch76WOIHZYGL5Sj5pLtgFIQf2lDtg17sbnxs=
-github.com/adaptiveteam/dialog-fetcher v0.1.0 h1:bdkfQmi0YTKeej0D9RzBkX4CzA47F1NFT3j7nZdvgFM=
+github.com/adaptiveteam/dialog-fetcher v0.1.0 h1:NAZNTeW9H//Gg7GR03U4b1qIKj3OXKZf0oKsxzgLBJA=
 github.com/adaptiveteam/dialog-fetcher v0.1.0/go.mod h1:JZtWD36ZVZcjTZfh8NsJiBqPW81cus/4R8emtQANHVY=
 github.com/antlr/antlr4 v0.0.0-20190313170020-28fc84874d7f h1:7TAx3xtLZLXhfmiqkfObG3uAL3UetBs+1LAVEgieE1Q=
 github.com/antlr/antlr4 v0.0.0-20190313170020-28fc84874d7f/go.mod h1:T7PbCXFs94rrTttyxjbyT5+/1V8T2TYDejxUfHJjw1Y=
