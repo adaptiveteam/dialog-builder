@@ -1,6 +1,7 @@
 package dialog_builder
 
 import (
+	"fmt"
 	"os"
 	"testing"
 )
@@ -12,6 +13,7 @@ func Test_dialog_Build(t *testing.T) {
 		os.Getenv("DIALOG_DIRECTORY"),
 		os.Getenv("DIALOG_CATALOG"),
 		os.Getenv("DIALOG_TABLE"),
+		os.Getenv("ALIAS_DIRECTORY"),
 		os.Getenv("LEARN_MORE_REPO"),
 		os.Getenv("LEARN_MORE_DIRECTORY"),
 		os.Getenv("BUILD_BRANCH"),
@@ -19,16 +21,8 @@ func Test_dialog_Build(t *testing.T) {
 		os.Getenv("MASTER_BRANCH"),
 	)
 
-	errorBuild, errorCultivatePR, errorMasterPR, errorLearnMorePR := Build(&dc)
-	if errorBuild != nil ||
-		errorCultivatePR != nil ||
-		errorMasterPR != nil ||
-		errorLearnMorePR != nil {
-		t.Errorf("Build errorS %v,%v,%v,%v",
-			errorBuild,
-			errorCultivatePR,
-			errorMasterPR,
-			errorLearnMorePR,
-		)
+	buildErrors := Build(&dc)
+	for k,v := range buildErrors {
+		fmt.Printf("Ran into an error of type %v with error %v\n", k,v)
 	}
 }

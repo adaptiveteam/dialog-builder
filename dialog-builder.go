@@ -1,18 +1,20 @@
 package dialog_builder
 
+import "github.com/adaptiveteam/core-utils-go"
 
 // NewDialogData is helper function that enables users to correctly
 // create instantiate a DialogData structure
 func NewDialogData(
-	organization string,
-	dialogRepo string,
-	dialogFolder string,
-	dialogCatalog string,
-	dialogTable string,
-	learnMoreRepo string,
-	learnMoreFolder string,
-	buildBranch string,
-	cultivationBranch string,
+	organization,
+	dialogRepo ,
+	dialogFolder ,
+	dialogCatalog ,
+	dialogTable ,
+	aliasFolder ,
+	learnMoreRepo ,
+	learnMoreFolder ,
+	buildBranch ,
+	cultivationBranch ,
 	masterBranch string,
 ) (rv DialogData) {
 	if organization       == "" ||
@@ -20,6 +22,7 @@ func NewDialogData(
 		dialogFolder      == "" ||
 		dialogCatalog     == "" ||
 		dialogTable       == "" ||
+		aliasFolder      == "" ||
 		learnMoreRepo     == "" ||
 		learnMoreFolder   == "" ||
 		buildBranch       == "" ||
@@ -33,12 +36,14 @@ func NewDialogData(
 	rv.DialogFolder = dialogFolder
 	rv.DialogCatalog = dialogCatalog
 	rv.DialogTable = dialogTable
+	rv.AliasFolder = aliasFolder
 	rv.LearnMoreRepo = learnMoreRepo
 	rv.LearnMoreFolder = learnMoreFolder
 	rv.BuildBranch = buildBranch
 	rv.CultivationBranch = cultivationBranch
 	rv.MasterBranch = masterBranch
 	rv.Modified = false
+	rv.BuildID = core_utils_go.Uuid()
 	return rv
 }
 
@@ -59,66 +64,103 @@ type DialogData struct {
 	DialogFolder string
 	DialogCatalog string
 	DialogTable string
+	AliasFolder string
 	LearnMoreRepo string
 	LearnMoreFolder string
 	BuildBranch string
 	CultivationBranch string
 	MasterBranch string
 	Modified bool
+	BuildID string
 }
 
 func Build(dc *DialogData) (
-	errorBuild error,
-	errorCultivatePR error,
-	errorMasterPR error,
-	errorLearnMorePR error,
+	errors map[string]error,
 ){
-	errorBuild = loadDialog(dc)
-	if errorBuild == nil {
-		errorBuild = updateCatalog(
+	var err error
+	errors = make(map[string]error,0)
+	err = loadFile(
+		dc,
+		dc.DialogFolder,
+		loadDialog,
+	)
+	if err != nil {
+		errors["load"] = err
+	}
+
+	if err == nil {
+		err = loadFile(
+			dc,
+			dc.AliasFolder,
+			loadAliases,
+		)
+		if err != nil {
+			errors["aliases"] = err
+		}
+	}
+
+	if  err == nil {
+		err = cleanUp(dc)
+		if err != nil {
+			errors["cleanup"] = err
+		}
+	}
+
+	if err == nil {
+
+		err = updateCatalog(
 			dc,
 			dc.DialogCatalog,
 		)
+		if err != nil {
+			errors["update-catalog"] = err
+		}
 	}
 
-	if errorBuild == nil && dc.Modified {
+	if err == nil && dc.Modified {
 		if !pullRequestExists(
 			dc,
 			dc.DialogRepo,
 			dc.BuildBranch,
 			dc.CultivationBranch,
 		) {
-			_, errorCultivatePR = createPullRequest(
+			_, err = createPullRequest(
 				dc,
-				"Moving from build to cultivation",
+				"Moving dialog from build to cultivation",
 				"Moving changes from the build branch created by the build process back down to cultivation",
 				dc.DialogRepo,
 				dc.BuildBranch,
 				dc.CultivationBranch,
 			)
+			if err != nil {
+				errors["build-to-cultivation-build-pr"] = err
+			}
 		}
-		if !pullRequestExists(
+		if err == nil && !pullRequestExists(
 			dc,
 			dc.DialogRepo,
 			dc.BuildBranch,
 			dc.MasterBranch,
 		) {
-			_, errorMasterPR = createPullRequest(
+			_, err = createPullRequest(
 				dc,
-				"Moving from build to master",
+				"Moving dialog from build to master",
 				"Moving changes from the build branch created by the build process up to the master branch",
 				dc.DialogRepo,
 				dc.BuildBranch,
 				dc.MasterBranch,
 			)
+			if err != nil {
+				errors["build-to-master-pr"] = err
+			}
 		}
-		if !pullRequestExists(
+		if err == nil && !pullRequestExists(
 			dc,
 			dc.DialogRepo,
 			dc.BuildBranch,
 			dc.MasterBranch,
 		) {
-			_,errorLearnMorePR = createPullRequest(
+			_,err = createPullRequest(
 				dc,
 				"Moving from cultivation",
 				"Moving changes from the cultivation branch up to the master branch",
@@ -126,8 +168,11 @@ func Build(dc *DialogData) (
 				dc.CultivationBranch,
 				dc.MasterBranch,
 			)
+			if err != nil {
+				errors["learn-more-pr"] = err
+			}
 		}
 	}
 
-	return errorBuild, errorCultivatePR, errorMasterPR, errorLearnMorePR
+	return errors
 }

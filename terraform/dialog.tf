@@ -1,6 +1,5 @@
 #******************************************************************************
-# This is for all claims history. We populate this from encrypted data stored *
-# in S3.                                                                      *
+# This is for all dialog in the bot.                                          *
 #******************************************************************************
 resource "aws_dynamodb_table" "dialog" {
   name = "${local.resource_name}_dialog"
@@ -24,7 +23,7 @@ resource "aws_dynamodb_table" "dialog" {
   ]
 
   server_side_encryption {
-    enabled = true
+    enabled = false
   }
 
   tags {
@@ -38,5 +37,30 @@ resource "aws_dynamodb_table" "dialog" {
     write_capacity     = "${var.database_performance["dialog_read_capacity"]}"
     read_capacity      = "${var.database_performance["dialog_read_capacity"]}"
     projection_type    = "ALL"
+  }
+}
+
+#******************************************************************************
+# This is for application aliases to dialog context in the bot.               *
+#******************************************************************************
+resource "aws_dynamodb_table" "context-alias" {
+  name = "${local.resource_name}_dialog_alias"
+  read_capacity = "${var.database_performance["dialog_read_capacity"]}"
+  write_capacity = "${var.database_performance["dialog_write_capacity"]}"
+  hash_key = "application_alias"
+
+  attribute = [
+    {
+      name = "application_alias"
+      type = "S"
+    }
+  ]
+
+  server_side_encryption {
+    enabled = false
+  }
+
+  tags {
+    Customer = "${local.resource_name}"
   }
 }
