@@ -3,12 +3,12 @@ package dialog_builder
 import (
 	"context"
 	"fmt"
+	awsutils "github.com/adaptiveteam/aws-utils-go"
 	"github.com/adaptiveteam/core-utils-go"
 	"github.com/adaptiveteam/dialog-fetcher"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/google/go-github/github"
-	awsutils "github.com/adaptiveteam/aws-utils-go"
 	"golang.org/x/oauth2"
 	"os"
 	"sort"
@@ -27,8 +27,8 @@ var (
 )
 
 const (
-	DIALOG_ID_PREFIX = "// DIALOG_ID: "
-	LEARN_MORE_PREFIX = "// LEARN_MORE: "
+	PrefixDialogID = "// DIALOG_ID: "
+	PrefixLearnMore = "// LEARN_MORE: "
 )
 
 type fileHandler func(
@@ -183,11 +183,11 @@ func compileDialogFile(
 		file = file+"# "+dc+"\n"
 	}
 	if dialogID != "" {
-		file = file + DIALOG_ID_PREFIX+dialogID+"\n"
+		file = file + PrefixDialogID+dialogID+"\n"
 	}
 
 	if learnMoreLink != "" {
-		file = file + LEARN_MORE_PREFIX+learnMoreLink+"\n"
+		file = file + PrefixLearnMore+learnMoreLink+"\n"
 	}
 
 	for _,dl := range dialogLines {
@@ -212,11 +212,11 @@ func parseDialogFile(blob string) (
 			if strings.HasPrefix(d,"#") {
 				trimmed = strings.Trim(strings.Trim(d,"#")," ")
 				comments = append(comments,trimmed)
-			} else if strings.HasPrefix(d,DIALOG_ID_PREFIX) {
-				trimmed = strings.Trim(strings.Trim(d,DIALOG_ID_PREFIX)," ")
+			} else if strings.HasPrefix(d,PrefixDialogID) {
+				trimmed = strings.Trim(strings.Trim(d,PrefixDialogID)," ")
 				dialogID = trimmed
-			} else if strings.HasPrefix(d,LEARN_MORE_PREFIX) {
-				trimmed = strings.Trim(strings.Trim(d,LEARN_MORE_PREFIX)," ")
+			} else if strings.HasPrefix(d,PrefixLearnMore) {
+				trimmed = strings.Trim(strings.Trim(d,PrefixLearnMore)," ")
 				learnMoreLink = trimmed
 				if learnMoreLink == "" {
 					learnMoreLink = "ERROR!"
@@ -346,9 +346,9 @@ func loadAliases(
 			packageName := strings.TrimSuffix(*aliasFile.Name,".txt")
 			if len(lineElements) == 2 {
 				item := fetch_dialog.ContextAliasEntry{
-					packageName+"#"+lineElements[0],
-					lineElements[1],
-					dc.BuildID,
+					Alias:packageName+"#"+lineElements[0],
+					Context:lineElements[1],
+					BuildID:dc.BuildID,
 				}
 				err = dynamo.PutTableEntry(item, dc.DialogTable+"_alias")
 			} else {
