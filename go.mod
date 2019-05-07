@@ -1,4 +1,4 @@
-module github.com/ctcreel/dialog
+module github.com/adaptiveteam/dialog-builder
 
 require (
 	cloud.google.com/go v0.38.0 // indirect
