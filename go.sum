@@ -24,6 +24,8 @@ github.com/adaptiveteam/dialog-fetcher v0.0.0-20190503033758-b425f647838a h1:BZ8
 github.com/adaptiveteam/dialog-fetcher v0.0.0-20190503033758-b425f647838a/go.mod h1:VLD1k668bmFgJa3j7Pc3nCJOak7Kpj6DzZgJRXnTrZ0=
 github.com/adaptiveteam/dialog-fetcher v0.0.0-20190504171044-8ec271b6c734 h1:bQnEkuXxBuAvE8jaxpl8LebQTEQWwcgZweQ2YLej7mk=
 github.com/adaptiveteam/dialog-fetcher v0.0.0-20190504171044-8ec271b6c734/go.mod h1:VLD1k668bmFgJa3j7Pc3nCJOak7Kpj6DzZgJRXnTrZ0=
+github.com/adaptiveteam/dialog-fetcher v0.0.0-20190505141723-4e079edacd84 h1:ebmAcBtlAEYgV/KnYUjnoGQLNZjE5JqOsPIGt1i9XOM=
+github.com/adaptiveteam/dialog-fetcher v0.0.0-20190505141723-4e079edacd84/go.mod h1:esJKDvAgdBwH8dsicbiv8SoThKd3UIacTjVxF6aAoSs=
 github.com/adaptiveteam/dialog-fetcher v0.1.0 h1:YsrRZEKlbEgrmo4JU/77YwG90CsmgGKzK0i/OkM4RR0=
 github.com/adaptiveteam/dialog-fetcher v0.1.0/go.mod h1:JZtWD36ZVZcjTZfh8NsJiBqPW81cus/4R8emtQANHVY=
 github.com/adaptiveteam/engagement-builder v0.6.0/go.mod h1:9Og3u2eTfernbh7d/qr2RuJMhk+d7OysU9z8m1pVeGo=

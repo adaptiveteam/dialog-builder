@@ -101,7 +101,7 @@ func updateFile(
 
 func storeDialog(
 	dc *DialogData,
-	dialogCoordinates string,
+	context string,
 	dialogSubject string,
 	dialog []string,
 	comments []string,
@@ -111,7 +111,7 @@ func storeDialog(
 ) (err error) {
 	updated := time.Now().Format("2006-01-02")
 	item := fetch_dialog.NewDialogEntry(
-			dialogCoordinates,
+			context,
 			dialogSubject,
 			updated,
 			dialog,
@@ -153,7 +153,7 @@ func getLearnMoreContent(dc *DialogData, dialogID string) (content string, link 
 			link = link + dc.CultivationBranch+"/"
 			link = link + dc.LearnMoreFolder+"/"+dialogID+".md"
 		}
-	} else if response.StatusCode == 404 {
+	} else if response != nil && response.StatusCode == 404 {
 		content = ""
 		link = ""
 		err = nil
@@ -210,19 +210,19 @@ func parseDialogFile(blob string) (
 		if len(d) > 0 {
 			var trimmed string
 			if strings.HasPrefix(d,"#") {
-				trimmed = strings.Trim(strings.Trim(d,"#")," ")
+				trimmed = strings.TrimSpace(strings.Trim(d,"#"))
 				comments = append(comments,trimmed)
 			} else if strings.HasPrefix(d,PrefixDialogID) {
-				trimmed = strings.Trim(strings.Trim(d,PrefixDialogID)," ")
+				trimmed = strings.TrimSpace(strings.Trim(d,PrefixDialogID))
 				dialogID = trimmed
 			} else if strings.HasPrefix(d,PrefixLearnMore) {
-				trimmed = strings.Trim(strings.Trim(d,PrefixLearnMore)," ")
+				trimmed = strings.TrimSpace(strings.Trim(d,PrefixLearnMore))
 				learnMoreLink = trimmed
 				if learnMoreLink == "" {
 					learnMoreLink = "ERROR!"
 				}
 			} else {
-				dialog = append(dialog,strings.Trim(d," "))
+				dialog = append(dialog,strings.TrimSpace(d))
 			}
 		}
 	}
@@ -583,17 +583,11 @@ func cleanUp(dc *DialogData) (err error){
 	dialogEntries := make([]fetch_dialog.DialogEntry,0)
 	err = dynamo.ScanTable(dc.DialogTable, &dialogEntries)
 	if err == nil {
-		sort.SliceStable(
-			dialogEntries,
-			func(i, j int) bool {
-				return dialogEntries[i].Context <= dialogEntries[j].Context
-			},
-		)
 		for i := 0; i < len(dialogEntries) && err == nil; i++ {
 			if dialogEntries[i].BuildID != dc.BuildID {
 				keyParams := map[string]*dynamodb.AttributeValue{
 					"dialog_id": {
-						N: aws.String(dialogEntries[i].DialogID),
+						S: aws.String(dialogEntries[i].DialogID),
 					},
 				}
 				err = dynamo.DeleteEntry(dc.DialogTable, keyParams)
