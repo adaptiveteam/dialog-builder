@@ -20,12 +20,16 @@ github.com/adaptiveteam/core-utils-go v0.7.0 h1:rssXJwwo1129M138Z4hznpIoHI4Hegqs
 github.com/adaptiveteam/core-utils-go v0.7.0/go.mod h1:1/YeY2wch76WOIHZYGL5Sj5pLtgFIQf2lDtg17sbnxs=
 github.com/adaptiveteam/core-utils-go v0.8.0-pre h1:c2acno/+N4JVfXYwYawS2nQAHPlElQAGZ84I/utxIO8=
 github.com/adaptiveteam/core-utils-go v0.8.0-pre/go.mod h1:1/YeY2wch76WOIHZYGL5Sj5pLtgFIQf2lDtg17sbnxs=
+github.com/adaptiveteam/core-utils-go v0.8.0 h1:f2cEeD1tpVGp4zqp+YGupL3DCJIoezCELkHtTt8LKVM=
+github.com/adaptiveteam/core-utils-go v0.8.0/go.mod h1:1/YeY2wch76WOIHZYGL5Sj5pLtgFIQf2lDtg17sbnxs=
 github.com/adaptiveteam/dialog-fetcher v0.0.0-20190503033758-b425f647838a h1:BZ8WnsQb5lj4z23b/P5yrTBZlRQOQZKlA6xrfBRHKXA=
 github.com/adaptiveteam/dialog-fetcher v0.0.0-20190503033758-b425f647838a/go.mod h1:VLD1k668bmFgJa3j7Pc3nCJOak7Kpj6DzZgJRXnTrZ0=
 github.com/adaptiveteam/dialog-fetcher v0.0.0-20190504171044-8ec271b6c734 h1:bQnEkuXxBuAvE8jaxpl8LebQTEQWwcgZweQ2YLej7mk=
 github.com/adaptiveteam/dialog-fetcher v0.0.0-20190504171044-8ec271b6c734/go.mod h1:VLD1k668bmFgJa3j7Pc3nCJOak7Kpj6DzZgJRXnTrZ0=
 github.com/adaptiveteam/dialog-fetcher v0.0.0-20190505141723-4e079edacd84 h1:ebmAcBtlAEYgV/KnYUjnoGQLNZjE5JqOsPIGt1i9XOM=
 github.com/adaptiveteam/dialog-fetcher v0.0.0-20190505141723-4e079edacd84/go.mod h1:esJKDvAgdBwH8dsicbiv8SoThKd3UIacTjVxF6aAoSs=
+github.com/adaptiveteam/dialog-fetcher v0.0.0-20190507025156-6bdef5807fd4 h1:1y1QpEig8Pbc8GR/zoDNmrR9F2hPplPU/GU9lLtzEdk=
+github.com/adaptiveteam/dialog-fetcher v0.0.0-20190507025156-6bdef5807fd4/go.mod h1:esJKDvAgdBwH8dsicbiv8SoThKd3UIacTjVxF6aAoSs=
 github.com/adaptiveteam/dialog-fetcher v0.1.0 h1:YsrRZEKlbEgrmo4JU/77YwG90CsmgGKzK0i/OkM4RR0=
 github.com/adaptiveteam/dialog-fetcher v0.1.0/go.mod h1:JZtWD36ZVZcjTZfh8NsJiBqPW81cus/4R8emtQANHVY=
 github.com/adaptiveteam/engagement-builder v0.6.0/go.mod h1:9Og3u2eTfernbh7d/qr2RuJMhk+d7OysU9z8m1pVeGo=
@@ -52,6 +56,8 @@ github.com/aws/aws-sdk-go v1.19.23 h1:euoy2X3HKkQUtsRXlC9ZuFruesVfKpsAl1brCTphCl
 github.com/aws/aws-sdk-go v1.19.23/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go v1.19.24 h1:qOIYaFxcFg07Vdn799ERpGiuUUIEi5MQ2vYib3CNMp4=
 github.com/aws/aws-sdk-go v1.19.24/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
+github.com/aws/aws-sdk-go v1.19.25 h1:8GCNTbGw/BnwH9LDxzqibltbJZCuro+1IohTFa58IDM=
+github.com/aws/aws-sdk-go v1.19.25/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/cenkalti/backoff v2.1.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/containerd/continuity v0.0.0-20181203112020-004b46473808/go.mod h1:GL3xCUCBDV3CZiTSEKksMWbLE66hEyuu9qyDOOqM47Y=
@@ -65,6 +71,7 @@ github.com/docker/go-units v0.3.3 h1:Xk8S3Xj5sLGlG5g67hJmYMmUgXv5N4PhkjJHHqrwnTk
 github.com/docker/go-units v0.3.3/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
 github.com/docker/go-units v0.4.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
+github.com/go-test/deep v1.0.1/go.mod h1:wGDj63lr65AM2AQyKZd/NYHGb0R+1RLqB8NKt3aSFNA=
 github.com/gofrs/uuid v3.2.0+incompatible h1:y12jRkkFxsd7GpqdSZ+/KCs/fJbqpEXSGd4+jfEaewE=
 github.com/gofrs/uuid v3.2.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
@@ -107,7 +114,8 @@ github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 github.com/lib/pq v1.1.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/lib/pq v1.1.1/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/lusis/go-slackbot v0.0.0-20180109053408-401027ccfef5/go.mod h1:c2mYKRyMb1BPkO5St0c/ps62L4S0W2NAkaTXj9qEI+0=
-github.com/lusis/slack-test v0.0.0-20190426140909-c40012f20018/go.mod h1:sFlOUpQL1YcjhFVXhg1CG8ZASEs/Mf1oVb6H75JL/zg=github.com/mattn/go-colorable v0.1.0/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
+github.com/lusis/slack-test v0.0.0-20190426140909-c40012f20018/go.mod h1:sFlOUpQL1YcjhFVXhg1CG8ZASEs/Mf1oVb6H75JL/zg=
+github.com/mattn/go-colorable v0.1.0/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
 github.com/mattn/go-colorable v0.1.1 h1:G1f5SKeVxmagw/IyvzvtZE4Gybcc4Tr1tf7I8z0XgOg=
 github.com/mattn/go-colorable v0.1.1/go.mod h1:FuOcm+DKB9mbwrcAfNl7/TZVBZ6rcnceauSikq3lYCQ=
 github.com/mattn/go-isatty v0.0.5/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hdxcsrc5s=
@@ -145,6 +153,7 @@ golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnf
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20190424203555-c05e17bb3b2d/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
 golang.org/x/crypto v0.0.0-20190426145343-a29dc8fdc734/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
+golang.org/x/crypto v0.0.0-20190506204251-e1dfcc566284/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
 golang.org/x/exp v0.0.0-20190121172915-509febef88a4/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/exp v0.0.0-20190306152737-a1d7652674e8/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/exp v0.0.0-20190429183610-475c5042d3f1/go.mod h1:ZjyILWgesfNpC6sMxTJOJm9Kp84zZh5NQWvqDGG3Qr8=
@@ -194,6 +203,7 @@ golang.org/x/sys v0.0.0-20190425145619-16072639606e/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20190429190828-d89cdac9e872/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20190502143002-c0b26311cb83/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20190502175342-a43fa875dd82/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20190506115046-ca7f33d4116e/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.1/go.mod h1:bEr9sfX3Q8Zfm5fL9x+3itogRgK3+ptLWKqgva+5dAk=
@@ -210,6 +220,7 @@ golang.org/x/tools v0.0.0-20190425150028-36563e24a262/go.mod h1:RgjU9mgBXZiqYHBn
 golang.org/x/tools v0.0.0-20190501045030-23463209683d/go.mod h1:RgjU9mgBXZiqYHBnxXauZ1Gv1EHHAz9KjViQ78xBX0Q=
 golang.org/x/tools v0.0.0-20190503030157-5cec639030af/go.mod h1:RgjU9mgBXZiqYHBnxXauZ1Gv1EHHAz9KjViQ78xBX0Q=
 golang.org/x/tools v0.0.0-20190503185657-3b6f9c0030f7/go.mod h1:RgjU9mgBXZiqYHBnxXauZ1Gv1EHHAz9KjViQ78xBX0Q=
+golang.org/x/tools v0.0.0-20190506145303-2d16b83fe98c/go.mod h1:RgjU9mgBXZiqYHBnxXauZ1Gv1EHHAz9KjViQ78xBX0Q=
 google.golang.org/api v0.4.0/go.mod h1:8k5glujaEP+g9n7WNsDg8QP6cUVNI86fCNMcbazEtwE=
 google.golang.org/appengine v1.1.0/go.mod h1:EbEs0AVv82hx2wNQdGPgUI5lhzA/G0D9YwlJXL52JkM=
 google.golang.org/appengine v1.4.0/go.mod h1:xpcJRLb0r/rnEns0DIKYYv+WjYCduHsrkT7/EB5XEv4=

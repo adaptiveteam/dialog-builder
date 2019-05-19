@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func Dialog_Build_Test(t *testing.T) {
+func Test_Dialog_Build(t *testing.T) {
 	dc := NewDialogData(
 		os.Getenv("DIALOG_ORGANIZATION"),
 		os.Getenv("DIALOG_REPO"),

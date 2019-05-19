@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/google/go-github/github"
-	"github.com/adaptiveteam/dialog-fetcher"
 	"golang.org/x/oauth2"
 	"os"
 	"sort"
