@@ -3,20 +3,21 @@ package dialog_builder
 import (
 	"os"
 	"testing"
+	utils "github.com/adaptiveteam/adaptive-utils-go"
 )
 
 func Dialog_Build_Test(t *testing.T) {
 	dc := NewDialogData(
-		os.Getenv("DIALOG_ORGANIZATION"),
-		os.Getenv("DIALOG_REPO"),
-		os.Getenv("DIALOG_DIRECTORY"),
-		os.Getenv("DIALOG_CATALOG"),
-		os.Getenv("DIALOG_TABLE"),
-		os.Getenv("LEARN_MORE_REPO"),
-		os.Getenv("LEARN_MORE_DIRECTORY"),
-		os.Getenv("BUILD_BRANCH"),
-		os.Getenv("CULTIVATION_BRANCH"),
-		os.Getenv("MASTER_BRANCH"),
+		utils.NonEmptyEnv("DIALOG_ORGANIZATION"),
+		utils.NonEmptyEnv("DIALOG_REPO"),
+		utils.NonEmptyEnv("DIALOG_DIRECTORY"),
+		utils.NonEmptyEnv("DIALOG_CATALOG"),
+		utils.NonEmptyEnv("DIALOG_TABLE"),
+		utils.NonEmptyEnv("LEARN_MORE_REPO"),
+		utils.NonEmptyEnv("LEARN_MORE_DIRECTORY"),
+		utils.NonEmptyEnv("BUILD_BRANCH"),
+		utils.NonEmptyEnv("CULTIVATION_BRANCH"),
+		utils.NonEmptyEnv("MASTER_BRANCH"),
 	)
 
 	errorBuild, errorCultivatePR, errorMasterPR, errorLearnMorePR := Build(&dc)
