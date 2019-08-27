@@ -1,10 +1,16 @@
 package dialog_builder
 
-import "github.com/adaptiveteam/core-utils-go"
+import (
+	awsutils "github.com/adaptiveteam/aws-utils-go"
+	"github.com/adaptiveteam/core-utils-go"
+)
+
 
 // NewDialogData is helper function that enables users to correctly
 // create instantiate a DialogData structure
 func NewDialogData(
+	dynamo *awsutils.DynamoRequest,
+	environmentName,
 	organization,
 	dialogRepo ,
 	dialogFolder ,
@@ -17,7 +23,9 @@ func NewDialogData(
 	cultivationBranch ,
 	masterBranch string,
 ) (rv DialogData) {
-	if organization       == "" ||
+	if dynamo == nil ||
+		environmentName == "" ||
+		organization       == "" ||
 		dialogRepo        == "" ||
 		dialogFolder      == "" ||
 		dialogCatalog     == "" ||
@@ -31,11 +39,12 @@ func NewDialogData(
 		panic("cannot have empty initialization values")
 	}
 
+	rv.EnvironmentName = environmentName
 	rv.Organization = organization
 	rv.DialogRepo = dialogRepo
 	rv.DialogFolder = dialogFolder
 	rv.DialogCatalog = dialogCatalog
-	rv.DialogTable = dialogTable
+	rv.DialogTable = environmentName+dialogTable
 	rv.AliasFolder = aliasFolder
 	rv.LearnMoreRepo = learnMoreRepo
 	rv.LearnMoreFolder = learnMoreFolder
@@ -44,6 +53,8 @@ func NewDialogData(
 	rv.MasterBranch = masterBranch
 	rv.Modified = false
 	rv.BuildID = core_utils_go.Uuid()
+	rv.dialogIDs = make(map[string]bool)
+	rv.dynamo = dynamo
 	return rv
 }
 
@@ -59,6 +70,8 @@ func NewDialogData(
 // cultivationBranch is the branch to update with cultivation work
 // masterBranch is the master branch
 type DialogData struct {
+	dynamo *awsutils.DynamoRequest
+	EnvironmentName string
 	Organization string
 	DialogRepo string
 	DialogFolder string
@@ -72,6 +85,7 @@ type DialogData struct {
 	MasterBranch string
 	Modified bool
 	BuildID string
+	dialogIDs map[string]bool
 }
 
 func Build(dc *DialogData) (
@@ -126,8 +140,8 @@ func Build(dc *DialogData) (
 		) {
 			_, err = createPullRequest(
 				dc,
-				"Moving dialog from build to cultivation",
-				"Moving changes from the build branch created by the build process back down to cultivation",
+				"Moving dialog from build to develop",
+				"Moving changes from the build branch created by the build process back down to develop",
 				dc.DialogRepo,
 				dc.BuildBranch,
 				dc.CultivationBranch,
@@ -162,8 +176,8 @@ func Build(dc *DialogData) (
 		) {
 			_,err = createPullRequest(
 				dc,
-				"Moving from cultivation",
-				"Moving changes from the cultivation branch up to the master branch",
+				"Moving from build",
+				"Moving changes from the build branch up to the master branch",
 				dc.LearnMoreRepo,
 				dc.CultivationBranch,
 				dc.MasterBranch,

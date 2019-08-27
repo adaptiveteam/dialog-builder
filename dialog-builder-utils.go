@@ -3,7 +3,6 @@ package dialog_builder
 import (
 	"context"
 	"fmt"
-	awsutils "github.com/adaptiveteam/aws-utils-go"
 	"github.com/adaptiveteam/core-utils-go"
 	"github.com/adaptiveteam/dialog-fetcher"
 	"github.com/aws/aws-sdk-go/aws"
@@ -22,7 +21,6 @@ var (
 	ts                       = oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token},)
 	tc                       = oauth2.NewClient(ctx, ts)
 	client                   = github.NewClient(tc)
-	dynamo                   = awsutils.NewDynamo(os.Getenv("AWS_REGION"), "", "dialog")
 	token                    = os.Getenv("GITHUB_API_KEY")
 )
 
@@ -51,7 +49,6 @@ AWS_REGION=us-east-1
 GITHUB_API_KEY=73d1c97528d28d6d332976b348aa61395b25d4a5
 DIALOG_CATALOG=dialog-library.md
 ALIAS_DIRECTORY=aliases
-ALIAS_TABLE=ctcreel_adaptive_context_alias
 */
 
 func updateFile(
@@ -124,7 +121,7 @@ func storeDialog(
 			dc.MasterBranch,
 			dc.BuildID,
 		)
-	err = dynamo.PutTableEntry(item, dc.DialogTable)
+	err = dc.dynamo.PutTableEntry(item, dc.DialogTable)
 
 	return err
 }
@@ -196,7 +193,7 @@ func compileDialogFile(
 	return file
 }
 
-func parseDialogFile(blob string) (
+func parseDialogFile(dc *DialogData,blob string) (
 	dialog []string,
 	comments []string,
 	dialogID string,
@@ -205,7 +202,8 @@ func parseDialogFile(blob string) (
 
 	dialog = make([]string,0)
 	comments = make([]string,0)
-	var fileLines = strings.Split(blob,"\n")
+
+	var fileLines = strings.Split(strings.ReplaceAll(blob,"\r","\n"),"\n")
 	for _,d := range fileLines {
 		if len(d) > 0 {
 			var trimmed string
@@ -215,6 +213,11 @@ func parseDialogFile(blob string) (
 			} else if strings.HasPrefix(d,PrefixDialogID) {
 				trimmed = strings.TrimSpace(strings.Trim(d,PrefixDialogID))
 				dialogID = trimmed
+				if dc.dialogIDs[trimmed] == false {
+					dc.dialogIDs[trimmed] = true
+				} else {
+					fmt.Println("Duplicate dialog key! Key is "+trimmed)
+				}
 			} else if strings.HasPrefix(d,PrefixLearnMore) {
 				trimmed = strings.TrimSpace(strings.Trim(d,PrefixLearnMore))
 				learnMoreLink = trimmed
@@ -226,6 +229,7 @@ func parseDialogFile(blob string) (
 			}
 		}
 	}
+	fmt.Println("Total dialog count - ",len(dc.dialogIDs))
 	return dialog,comments,dialogID, learnMoreLink
 }
 
@@ -249,7 +253,7 @@ func loadDialog(
 		if err == nil {
 			var learnMoreContent string
 			var commitMessage string
-			dialogLines,dialogComments,dialogID,oldLearnMoreLink := parseDialogFile(dialogBlob)
+			dialogLines,dialogComments,dialogID,oldLearnMoreLink := parseDialogFile(dc, dialogBlob)
 
 			// If there is no dialog ID then add one
 			if dialogID == "" {
@@ -350,7 +354,7 @@ func loadAliases(
 					Context:lineElements[1],
 					BuildID:dc.BuildID,
 				}
-				err = dynamo.PutTableEntry(item, dc.DialogTable+"_alias")
+				err = dc.dynamo.PutTableEntry(item, dc.DialogTable+"_alias")
 			} else {
 				err = fmt.Errorf(
 					"line #%v from aliases file %v not formatted correctly",
@@ -480,10 +484,10 @@ func loadFile(
 	return err
 }
 
-func getAllContent(dialogTable string) (dialogEntries []fetch_dialog.DialogEntry, err error) {
+func getAllContent(dc *DialogData) (dialogEntries []fetch_dialog.DialogEntry, err error) {
 	//scan the table after deletion
 	dialogEntries = make([]fetch_dialog.DialogEntry,0)
-	err = dynamo.ScanTable(dialogTable, &dialogEntries)
+	err = dc.dynamo.ScanTable(dc.DialogTable, &dialogEntries)
 	if err == nil {
 		sort.SliceStable(
 			dialogEntries,
@@ -499,7 +503,7 @@ func generateCatalog(
 	dc *DialogData,
 	fileName string,
 ) (report string, err error) {
-	allContent, err := getAllContent(dc.DialogTable)
+	allContent, err := getAllContent(dc)
 	if err == nil {
 		baseURL  := "https://github.com/"+dc.Organization
 		baseDialogEditURL := baseURL+"/"+dc.DialogRepo+"/edit/"+dc.CultivationBranch+"/"
@@ -581,7 +585,7 @@ func updateCatalog(
 func cleanUp(dc *DialogData) (err error){
 	// Clean up the dialog table
 	dialogEntries := make([]fetch_dialog.DialogEntry,0)
-	err = dynamo.ScanTable(dc.DialogTable, &dialogEntries)
+	err = dc.dynamo.ScanTable(dc.DialogTable, &dialogEntries)
 	if err == nil {
 		for i := 0; i < len(dialogEntries) && err == nil; i++ {
 			if dialogEntries[i].BuildID != dc.BuildID {
@@ -590,13 +594,13 @@ func cleanUp(dc *DialogData) (err error){
 						S: aws.String(dialogEntries[i].DialogID),
 					},
 				}
-				err = dynamo.DeleteEntry(dc.DialogTable, keyParams)
+				err = dc.dynamo.DeleteEntry(dc.DialogTable, keyParams)
 			}
 		}
 
 		// Clean up the alias table
 		aliasEntries := make([]fetch_dialog.ContextAliasEntry, 0)
-		err = dynamo.ScanTable(dc.DialogTable+"_alias", &aliasEntries)
+		err = dc.dynamo.ScanTable(dc.DialogTable+"_alias", &aliasEntries)
 		if err == nil {
 			sort.SliceStable(
 				aliasEntries,
@@ -611,7 +615,7 @@ func cleanUp(dc *DialogData) (err error){
 							S: aws.String(aliasEntries[i].Alias),
 						},
 					}
-					err = dynamo.DeleteEntry(dc.DialogTable+"_alias", keyParams)
+					err = dc.dynamo.DeleteEntry(dc.DialogTable+"_alias", keyParams)
 				}
 			}
 		}
