@@ -5,6 +5,7 @@ import (
 	awsutils "github.com/adaptiveteam/aws-utils-go"
 	"os"
 	"testing"
+	utils "github.com/adaptiveteam/adaptive-utils-go"
 )
 
 func Test_Dialog_Build(t *testing.T) {
