@@ -5,6 +5,9 @@ go:
 os:
   - linux
 
+services:
+  - docker
+
 dist: trusty
 sudo: false
 
@@ -15,6 +18,5 @@ env:
 
 script:
   - go test -v
-
 notifications:
-  slack: geigsen2:TBhXpLjpz2ggwaNWOTcO7TSo
+  slack: geigsen2:ox8c7ZnwqDHh4mzJaahOsMFL
