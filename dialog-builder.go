@@ -1,25 +1,36 @@
 package dialog_builder
 
+import (
+	awsutils "github.com/adaptiveteam/aws-utils-go"
+	"github.com/adaptiveteam/core-utils-go"
+)
+
 
 // NewDialogData is helper function that enables users to correctly
 // create instantiate a DialogData structure
 func NewDialogData(
-	organization string,
-	dialogRepo string,
-	dialogFolder string,
-	dialogCatalog string,
-	dialogTable string,
-	learnMoreRepo string,
-	learnMoreFolder string,
-	buildBranch string,
-	cultivationBranch string,
+	dynamo *awsutils.DynamoRequest,
+	environmentName,
+	organization,
+	dialogRepo ,
+	dialogFolder ,
+	dialogCatalog ,
+	dialogTable ,
+	aliasFolder ,
+	learnMoreRepo ,
+	learnMoreFolder ,
+	buildBranch ,
+	cultivationBranch ,
 	masterBranch string,
 ) (rv DialogData) {
-	if organization       == "" ||
+	if dynamo == nil ||
+		environmentName == "" ||
+		organization       == "" ||
 		dialogRepo        == "" ||
 		dialogFolder      == "" ||
 		dialogCatalog     == "" ||
 		dialogTable       == "" ||
+		aliasFolder      == "" ||
 		learnMoreRepo     == "" ||
 		learnMoreFolder   == "" ||
 		buildBranch       == "" ||
@@ -28,17 +39,22 @@ func NewDialogData(
 		panic("cannot have empty initialization values")
 	}
 
+	rv.EnvironmentName = environmentName
 	rv.Organization = organization
 	rv.DialogRepo = dialogRepo
 	rv.DialogFolder = dialogFolder
 	rv.DialogCatalog = dialogCatalog
-	rv.DialogTable = dialogTable
+	rv.DialogTable = environmentName+dialogTable
+	rv.AliasFolder = aliasFolder
 	rv.LearnMoreRepo = learnMoreRepo
 	rv.LearnMoreFolder = learnMoreFolder
 	rv.BuildBranch = buildBranch
 	rv.CultivationBranch = cultivationBranch
 	rv.MasterBranch = masterBranch
 	rv.Modified = false
+	rv.BuildID = core_utils_go.Uuid()
+	rv.dialogIDs = make(map[string]bool)
+	rv.dynamo = dynamo
 	return rv
 }
 
@@ -54,80 +70,123 @@ func NewDialogData(
 // cultivationBranch is the branch to update with cultivation work
 // masterBranch is the master branch
 type DialogData struct {
+	dynamo *awsutils.DynamoRequest
+	EnvironmentName string
 	Organization string
 	DialogRepo string
 	DialogFolder string
 	DialogCatalog string
 	DialogTable string
+	AliasFolder string
 	LearnMoreRepo string
 	LearnMoreFolder string
 	BuildBranch string
 	CultivationBranch string
 	MasterBranch string
 	Modified bool
+	BuildID string
+	dialogIDs map[string]bool
 }
 
 func Build(dc *DialogData) (
-	errorBuild error,
-	errorCultivatePR error,
-	errorMasterPR error,
-	errorLearnMorePR error,
+	errors map[string]error,
 ){
-	errorBuild = loadDialog(dc)
-	if errorBuild == nil {
-		errorBuild = updateCatalog(
+	var err error
+	errors = make(map[string]error,0)
+	err = loadFile(
+		dc,
+		dc.DialogFolder,
+		loadDialog,
+	)
+	if err != nil {
+		errors["load"] = err
+	}
+
+	if err == nil {
+		err = loadFile(
+			dc,
+			dc.AliasFolder,
+			loadAliases,
+		)
+		if err != nil {
+			errors["aliases"] = err
+		}
+	}
+
+	if  err == nil {
+		err = cleanUp(dc)
+		if err != nil {
+			errors["cleanup"] = err
+		}
+	}
+
+	if err == nil {
+
+		err = updateCatalog(
 			dc,
 			dc.DialogCatalog,
 		)
+		if err != nil {
+			errors["update-catalog"] = err
+		}
 	}
 
-	if errorBuild == nil && dc.Modified {
+	if err == nil && dc.Modified {
 		if !pullRequestExists(
 			dc,
 			dc.DialogRepo,
 			dc.BuildBranch,
 			dc.CultivationBranch,
 		) {
-			_, errorCultivatePR = createPullRequest(
+			_, err = createPullRequest(
 				dc,
-				"Moving from build to cultivation",
-				"Moving changes from the build branch created by the build process back down to cultivation",
+				"Moving dialog from build to develop",
+				"Moving changes from the build branch created by the build process back down to develop",
 				dc.DialogRepo,
 				dc.BuildBranch,
 				dc.CultivationBranch,
 			)
+			if err != nil {
+				errors["build-to-cultivation-build-pr"] = err
+			}
 		}
-		if !pullRequestExists(
+		if err == nil && !pullRequestExists(
 			dc,
 			dc.DialogRepo,
 			dc.BuildBranch,
 			dc.MasterBranch,
 		) {
-			_, errorMasterPR = createPullRequest(
+			_, err = createPullRequest(
 				dc,
-				"Moving from build to master",
+				"Moving dialog from build to master",
 				"Moving changes from the build branch created by the build process up to the master branch",
 				dc.DialogRepo,
 				dc.BuildBranch,
 				dc.MasterBranch,
 			)
+			if err != nil {
+				errors["build-to-master-pr"] = err
+			}
 		}
-		if !pullRequestExists(
+		if err == nil && !pullRequestExists(
 			dc,
 			dc.DialogRepo,
 			dc.BuildBranch,
 			dc.MasterBranch,
 		) {
-			_,errorLearnMorePR = createPullRequest(
+			_,err = createPullRequest(
 				dc,
-				"Moving from cultivation",
-				"Moving changes from the cultivation branch up to the master branch",
+				"Moving from build",
+				"Moving changes from the build branch up to the master branch",
 				dc.LearnMoreRepo,
 				dc.CultivationBranch,
 				dc.MasterBranch,
 			)
+			if err != nil {
+				errors["learn-more-pr"] = err
+			}
 		}
 	}
 
-	return errorBuild, errorCultivatePR, errorMasterPR, errorLearnMorePR
+	return errors
 }

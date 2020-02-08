@@ -3,10 +3,11 @@ package dialog_builder
 import (
 	"context"
 	"fmt"
-	"github.com/adaptiveteam/aws-utils-go"
 	"github.com/adaptiveteam/core-utils-go"
-	"github.com/google/go-github/github"
 	"github.com/adaptiveteam/dialog-fetcher"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 	"os"
 	"sort"
@@ -20,14 +21,35 @@ var (
 	ts                       = oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token},)
 	tc                       = oauth2.NewClient(ctx, ts)
 	client                   = github.NewClient(tc)
-	dynamo                   = awsutils.NewDynamo(os.Getenv("AWS_REGION"), "", "dialog")
 	token                    = os.Getenv("GITHUB_API_KEY")
 )
 
 const (
-	DIALOG_ID_PREFIX = "// DIALOG_ID: "
-	LEARN_MORE_PREFIX = "// LEARN_MORE: "
+	PrefixDialogID = "// DIALOG_ID: "
+	PrefixLearnMore = "// LEARN_MORE: "
 )
+
+type fileHandler func(
+dc *DialogData,
+file *github.RepositoryContent,
+) (err error)
+
+/*
+Sample Environment Variable Settings
+DIALOG_ORGANIZATION=adaptiveteam
+DIALOG_REPO=dialog-library
+DIALOG_DIRECTORY=dialog
+DIALOG_TABLE=ctcreel_adaptive_dialog
+LEARN_MORE_REPO=adaptiveteam.github.io
+LEARN_MORE_DIRECTORY=learn_more
+BUILD_BRANCH=build
+CULTIVATION_BRANCH=cultivate
+MASTER_BRANCH=master
+AWS_REGION=us-east-1
+GITHUB_API_KEY=73d1c97528d28d6d332976b348aa61395b25d4a5
+DIALOG_CATALOG=dialog-library.md
+ALIAS_DIRECTORY=aliases
+*/
 
 func updateFile(
 	org string,
@@ -76,7 +98,7 @@ func updateFile(
 
 func storeDialog(
 	dc *DialogData,
-	dialogCoordinates string,
+	context string,
 	dialogSubject string,
 	dialog []string,
 	comments []string,
@@ -85,20 +107,21 @@ func storeDialog(
 	learnMoreContent string,
 ) (err error) {
 	updated := time.Now().Format("2006-01-02")
-	item := fetch_dialog.DialogEntry{
-		Context:dialogCoordinates,
-		Subject:dialogSubject,
-		Updated:updated,
-		Dialog:dialog,
-		Comments:comments,
-		DialogID: dialogID,
-		LearnMoreLink: learnMoreLink,
-		LearnMoreContent:learnMoreContent,
-		BuildBranch:dc.BuildBranch,
-		CultivationBranch:dc.CultivationBranch,
-		MasterBranch:dc.MasterBranch,
-	}
-	err = dynamo.PutTableEntry(item, dc.DialogTable)
+	item := fetch_dialog.NewDialogEntry(
+			context,
+			dialogSubject,
+			updated,
+			dialog,
+			comments,
+			dialogID,
+			learnMoreLink,
+			learnMoreContent,
+			dc.BuildBranch,
+			dc.CultivationBranch,
+			dc.MasterBranch,
+			dc.BuildID,
+		)
+	err = dc.dynamo.PutTableEntry(item, dc.DialogTable)
 
 	return err
 }
@@ -127,7 +150,7 @@ func getLearnMoreContent(dc *DialogData, dialogID string) (content string, link 
 			link = link + dc.CultivationBranch+"/"
 			link = link + dc.LearnMoreFolder+"/"+dialogID+".md"
 		}
-	} else if response.StatusCode == 404 {
+	} else if response != nil && response.StatusCode == 404 {
 		content = ""
 		link = ""
 		err = nil
@@ -157,11 +180,11 @@ func compileDialogFile(
 		file = file+"# "+dc+"\n"
 	}
 	if dialogID != "" {
-		file = file + DIALOG_ID_PREFIX+dialogID+"\n"
+		file = file + PrefixDialogID+dialogID+"\n"
 	}
 
 	if learnMoreLink != "" {
-		file = file + LEARN_MORE_PREFIX+learnMoreLink+"\n"
+		file = file + PrefixLearnMore+learnMoreLink+"\n"
 	}
 
 	for _,dl := range dialogLines {
@@ -170,7 +193,7 @@ func compileDialogFile(
 	return file
 }
 
-func parseDialogFile(blob string) (
+func parseDialogFile(dc *DialogData,blob string) (
 	dialog []string,
 	comments []string,
 	dialogID string,
@@ -179,31 +202,38 @@ func parseDialogFile(blob string) (
 
 	dialog = make([]string,0)
 	comments = make([]string,0)
-	var fileLines = strings.Split(blob,"\n")
+
+	var fileLines = strings.Split(strings.ReplaceAll(blob,"\r","\n"),"\n")
 	for _,d := range fileLines {
 		if len(d) > 0 {
 			var trimmed string
 			if strings.HasPrefix(d,"#") {
-				trimmed = strings.Trim(strings.Trim(d,"#")," ")
+				trimmed = strings.TrimSpace(strings.Trim(d,"#"))
 				comments = append(comments,trimmed)
-			} else if strings.HasPrefix(d,DIALOG_ID_PREFIX) {
-				trimmed = strings.Trim(strings.Trim(d,DIALOG_ID_PREFIX)," ")
+			} else if strings.HasPrefix(d,PrefixDialogID) {
+				trimmed = strings.TrimSpace(strings.Trim(d,PrefixDialogID))
 				dialogID = trimmed
-			} else if strings.HasPrefix(d,LEARN_MORE_PREFIX) {
-				trimmed = strings.Trim(strings.Trim(d,LEARN_MORE_PREFIX)," ")
+				if dc.dialogIDs[trimmed] == false {
+					dc.dialogIDs[trimmed] = true
+				} else {
+					fmt.Println("Duplicate dialog key! Key is "+trimmed)
+				}
+			} else if strings.HasPrefix(d,PrefixLearnMore) {
+				trimmed = strings.TrimSpace(strings.Trim(d,PrefixLearnMore))
 				learnMoreLink = trimmed
 				if learnMoreLink == "" {
 					learnMoreLink = "ERROR!"
 				}
 			} else {
-				dialog = append(dialog,strings.Trim(d," "))
+				dialog = append(dialog,strings.TrimSpace(d))
 			}
 		}
 	}
+	fmt.Println("Total dialog count - ",len(dc.dialogIDs))
 	return dialog,comments,dialogID, learnMoreLink
 }
 
-func postDialog(
+func loadDialog(
 	dc *DialogData,
 	dialog *github.RepositoryContent,
 )(err error) {
@@ -223,7 +253,7 @@ func postDialog(
 		if err == nil {
 			var learnMoreContent string
 			var commitMessage string
-			dialogLines,dialogComments,dialogID,oldLearnMoreLink := parseDialogFile(dialogBlob)
+			dialogLines,dialogComments,dialogID,oldLearnMoreLink := parseDialogFile(dc, dialogBlob)
 
 			// If there is no dialog ID then add one
 			if dialogID == "" {
@@ -296,9 +326,54 @@ func postDialog(
 	return err
 }
 
-func crawlContext(
+func loadAliases(
+	dc *DialogData,
+	aliasFile *github.RepositoryContent,
+)(err error) {
+	getOptions := &github.RepositoryContentGetOptions{
+		Ref:"heads/"+dc.BuildBranch,
+	}
+	contents,_,_,err := client.Repositories.GetContents(
+		ctx,
+		dc.Organization,
+		dc.DialogRepo,
+		aliasFile.GetPath(),
+		getOptions,
+	)
+
+	if err == nil {
+		var aliasBlob string
+		aliasBlob, err = contents.GetContent()
+		aliasLines := strings.Split(strings.TrimSpace(aliasBlob),"\n")
+		for i,line := range aliasLines {
+			lineElements := strings.Split(line,":")
+			packageName := strings.TrimSuffix(*aliasFile.Name,".txt")
+			if len(lineElements) == 2 {
+				item := fetch_dialog.ContextAliasEntry{
+					Alias:packageName+"#"+lineElements[0],
+					Context:lineElements[1],
+					BuildID:dc.BuildID,
+				}
+				err = dc.dynamo.PutTableEntry(item, dc.DialogTable+"_alias")
+			} else {
+				err = fmt.Errorf(
+					"line #%v from aliases file %v not formatted correctly",
+					i,
+					aliasFile.GetPath(),
+				)
+			}
+
+		}
+
+		return err
+	}
+	return err
+}
+
+func crawlDirectory(
 	dc *DialogData,
 	path string,
+	handler fileHandler,
 ) (err error) {
 	getOptions := &github.RepositoryContentGetOptions{
 		Ref:"heads/"+dc.BuildBranch,
@@ -313,14 +388,15 @@ func crawlContext(
 
 	for i:=0; i < len(directories) && err == nil;i++ {
 		if directories[i].GetType() == "file" && strings.HasSuffix(directories[i].GetName(),".txt"){
-			err = postDialog(
+			err = handler(
 				dc,
 				directories[i],
 			)
 		} else if directories[i].GetType() == "dir" {
-			err = crawlContext(
+			err = crawlDirectory(
 				dc,
 				directories[i].GetPath(),
+				handler,
 			)
 		}
 	}
@@ -374,7 +450,11 @@ func createPullRequest(
 	return pr, err
 }
 
-func loadDialog(dc *DialogData) error {
+func loadFile(
+	dc *DialogData,
+	folder string,
+	handler fileHandler,
+) error {
 	getOptions := &github.RepositoryContentGetOptions{
 		Ref: "heads/"+dc.BuildBranch,
 	}
@@ -388,25 +468,26 @@ func loadDialog(dc *DialogData) error {
 	found := false
 
 	for i := 0; i < len(directory) && !found && err == nil; i++{
-		if directory[i].GetName() == dc.DialogFolder {
-			err = crawlContext(
+		if directory[i].GetName() == folder {
+			err = crawlDirectory(
 				dc,
 				directory[i].GetPath(),
+				handler,
 			)
 			found  = true
 		}
 	}
 
 	if err ==  nil && !found {
-		err = fmt.Errorf("unable to find dialog directory %s", dc.DialogFolder)
+		err = fmt.Errorf("unable to find directory %s", dc.DialogFolder)
 	}
 	return err
 }
 
-func getAllContent(dialogTable string) (dialogEntries []fetch_dialog.DialogEntry, err error) {
+func getAllContent(dc *DialogData) (dialogEntries []fetch_dialog.DialogEntry, err error) {
 	//scan the table after deletion
 	dialogEntries = make([]fetch_dialog.DialogEntry,0)
-	err = dynamo.ScanTable(dialogTable, &dialogEntries)
+	err = dc.dynamo.ScanTable(dc.DialogTable, &dialogEntries)
 	if err == nil {
 		sort.SliceStable(
 			dialogEntries,
@@ -422,7 +503,7 @@ func generateCatalog(
 	dc *DialogData,
 	fileName string,
 ) (report string, err error) {
-	allContent, err := getAllContent(dc.DialogTable)
+	allContent, err := getAllContent(dc)
 	if err == nil {
 		baseURL  := "https://github.com/"+dc.Organization
 		baseDialogEditURL := baseURL+"/"+dc.DialogRepo+"/edit/"+dc.CultivationBranch+"/"
@@ -442,7 +523,7 @@ func generateCatalog(
 				currentContext = newContext
 				tableOfContents = tableOfContents+"\n  * ["+currentContext+"]("+quickLink+")"
 			}
-			report = report + "### Subject: "+de.Subject+"\n"
+			report = report + "### Subject: "+de.Subject+" "
 			report = report + " [[Edit]]("+baseDialogEditURL+currentContext+de.Subject+".txt)"
 			report = report + "[[View]]("+baseDialogViewURL+currentContext+de.Subject+".txt)\n"
 
@@ -496,6 +577,48 @@ func updateCatalog(
 	)
 	if !modified {
 		err = fmt.Errorf("expected to modify dialog library but did not")
+	}
+
+	return err
+}
+
+func cleanUp(dc *DialogData) (err error){
+	// Clean up the dialog table
+	dialogEntries := make([]fetch_dialog.DialogEntry,0)
+	err = dc.dynamo.ScanTable(dc.DialogTable, &dialogEntries)
+	if err == nil {
+		for i := 0; i < len(dialogEntries) && err == nil; i++ {
+			if dialogEntries[i].BuildID != dc.BuildID {
+				keyParams := map[string]*dynamodb.AttributeValue{
+					"dialog_id": {
+						S: aws.String(dialogEntries[i].DialogID),
+					},
+				}
+				err = dc.dynamo.DeleteEntry(dc.DialogTable, keyParams)
+			}
+		}
+
+		// Clean up the alias table
+		aliasEntries := make([]fetch_dialog.ContextAliasEntry, 0)
+		err = dc.dynamo.ScanTable(dc.DialogTable+"_alias", &aliasEntries)
+		if err == nil {
+			sort.SliceStable(
+				aliasEntries,
+				func(i, j int) bool {
+					return aliasEntries[i].Context <= aliasEntries[j].Context
+				},
+			)
+			for i := 0; i < len(aliasEntries) && err == nil; i++ {
+				if aliasEntries[i].BuildID != dc.BuildID {
+					keyParams := map[string]*dynamodb.AttributeValue{
+						"application_alias": {
+							S: aws.String(aliasEntries[i].Alias),
+						},
+					}
+					err = dc.dynamo.DeleteEntry(dc.DialogTable+"_alias", keyParams)
+				}
+			}
+		}
 	}
 
 	return err
